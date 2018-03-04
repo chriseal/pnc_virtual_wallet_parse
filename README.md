@@ -1,8 +1,15 @@
 # pnc_virtual_wallet_parse
+
 Script to parse the monthly statement pdfs for a Virtual Wallet Spend account. May help with tax prep.
 
-For traditional accounts, aggregate monthly csv exports from PNC into a filterable spreadsheet.
-For virtual wallet accounts, parse monthly statements (in pdf form) and then aggregate into a filterable spreadsheet.
+Here's what I did to prepare my taxes for the year, using PNC.com.
+
+PNC.com does not currently allow you to export a csv of all transaction data for the year. For traditional accounts, it allows a month-by-month csv download; for virtual wallets, it only gives access to PDF monthly statements, which are difficult to copy/paste.
+
+This script does:
+
+- For traditional accounts, aggregate monthly csv exports from PNC into a filterable spreadsheet.
+- For virtual wallet accounts, parse monthly statements (in pdf form) and then aggregate into a filterable spreadsheet.
 
 ## Setup
 
@@ -52,3 +59,12 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 ```
 
 3. Import the csv that the program outputs into a spreadsheet program of your choice. Do the appropriate filtering, labeling for tax purposes or otherwise, and potentially, create a pivot table to aggregate the results.
+
+## TODO
+
+- Gather second line descriptions that cross multiple lines in the PDF
+- Correctly parse transfer rows
+
+## Feedback 
+
+This is a pretty barebones script. Let me know if you have any suggested improvements!

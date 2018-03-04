@@ -1,6 +1,4 @@
-# pnc_virtual_wallet_parse
-
-Script to parse the monthly statement pdfs for a Virtual Wallet Spend account. May help with tax prep.
+# Parse PNC.com monthly statement CSVs or PDFs for traditional and Virtual Wallet Spend accounts
 
 Here's what I did to prepare my taxes for the year, using PNC.com.
 

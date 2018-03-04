@@ -1,4 +1,4 @@
-# Parse PNC.com monthly statements for Tax Preparation
+# Aggregate PNC.com monthly statements for Tax Preparation
 
 PNC.com does not currently allow you to export a csv of all transaction data for the year. For traditional accounts, it allows a month-by-month csv download; for virtual wallets, it only gives access to PDF monthly statements, which are difficult to copy/paste. This is what I did to prepare my taxes for 2017.
 

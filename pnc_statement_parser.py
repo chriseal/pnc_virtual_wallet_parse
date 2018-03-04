@@ -15,6 +15,9 @@ long_whitespace_p = re.compile(r'[\r\n\t\f\v]|   ')
 MY_p = re.compile(r'\d{2}\/\d{2}')
 printable = set(string.printable)
 
+if not os.path.exists('./data'):
+	os.mkdir('./data')
+
 
 def rm_custom_chars_lower(txt, row_starts_in_colIdx1=False):
 	""" # remove commas and dollar signs so that it's easier to match numerics """

@@ -1,13 +1,11 @@
-# Parse PNC.com monthly statement CSVs or PDFs for traditional and Virtual Wallet Spend accounts
+# Parse PNC.com monthly statements for Tax Preparation
 
-Here's what I did to prepare my taxes for the year, using PNC.com.
-
-PNC.com does not currently allow you to export a csv of all transaction data for the year. For traditional accounts, it allows a month-by-month csv download; for virtual wallets, it only gives access to PDF monthly statements, which are difficult to copy/paste.
+PNC.com does not currently allow you to export a csv of all transaction data for the year. For traditional accounts, it allows a month-by-month csv download; for virtual wallets, it only gives access to PDF monthly statements, which are difficult to copy/paste. This is what I did to prepare my taxes for 2017.
 
 This script does:
 
 - For traditional accounts, aggregate monthly csv exports from PNC into a filterable spreadsheet.
-- For virtual wallet accounts, parse monthly statements (in pdf form) and then aggregate into a filterable spreadsheet.
+- For Virtual Wallet accounts, parse monthly statements (in pdf form) and then aggregate into a filterable spreadsheet.
 
 ## Setup
 

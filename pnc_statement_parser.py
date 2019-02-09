@@ -11,12 +11,16 @@ import datetime
 
 
 linebreak_p = re.compile(r'\r|\n|\x0c')
-long_whitespace_p = re.compile(r'[\r\n\t\f\v]|   ') 
+long_whitespace_p = re.compile(r'[\r\n\t\f\v]|   ')
 MY_p = re.compile(r'\d{2}\/\d{2}')
 printable = set(string.printable)
 
 if not os.path.exists('./data'):
 	os.mkdir('./data')
+
+
+def get_fname_from_fpath(save_to_fpath):
+	return save_to_fpath.split("/")[-1].split('.')[0]
 
 
 def rm_custom_chars_lower(txt, row_starts_in_colIdx1=False):
@@ -135,7 +139,7 @@ def combine_monthly_statements_for_year(folder_path, year_to_analyze, save_to_fp
 	As of March 2018, PNC allows month-by-month monthly export of transaction activity in traditional accounts
 
 	Aggregate from a folder of monthly activity csv exports from PNC.com for a given year (i.e. 12 files, if the account was open all year)
-	
+
 	combine_monthly_statements_for_year(folder_path, year_to_analyze, save_to_fpath)
 	"""
 
@@ -145,7 +149,7 @@ def combine_monthly_statements_for_year(folder_path, year_to_analyze, save_to_fp
 		df.columns = ['date', 'amount', 'desc', '1','2', 'type']
 		dfs.append(df)
 
-	df = pd.concat(dfs, ignore_index=True)
+	df = pd.concat(dfs, ignore_index=True, sort=False)
 	df.drop_duplicates(inplace=True)
 	df['date'] = df['date'].apply(lambda x: pd.to_datetime(x))
 	mask_keep = df['date'].apply(lambda x: x.year == year_to_analyze)
@@ -158,7 +162,7 @@ def combine_monthly_statements_for_year(folder_path, year_to_analyze, save_to_fp
 	credit.rename(columns={'amount': 'credit'}, inplace=True)
 	credit['debit'] = None
 
-	df = pd.concat([debit, credit], ignore_index=True)
+	df = pd.concat([debit, credit], ignore_index=True, sort=False)
 	df.sort_values(by='date', ascending=True, inplace=True)
 	df.reset_index(inplace=True, drop=True)
 	df = df[['date', 'debit', 'credit', 'desc', 'type', '1', '2']].copy()
@@ -166,22 +170,23 @@ def combine_monthly_statements_for_year(folder_path, year_to_analyze, save_to_fp
 	df['credit'] = df['credit'].fillna(0.)
 	df['debit'] = df['debit'].astype(float)
 	df['credit'] = df['credit'].astype(float)
+	df['account'] = get_fname_from_fpath(save_to_fpath)
 
 	df.to_csv(save_to_fpath, index=False)
 
 
 def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
-	""" For virtual wallet accounts, parse monthly statements (in pdf form) and then aggregate into a filterable spreadsheet. 
+	""" For virtual wallet accounts, parse monthly statements (in pdf form) and then aggregate into a filterable spreadsheet.
 	As of March 2018, PNC.com has no means of exporting csv's for transaction activity in virtual accounts.
 
 	Aggregate a folder of pdf monthly statements from PNC.com for input into a spreadsheet for easy filtering and categorization.
 
-	parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath) 
+	parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath)
 	"""
 
 	dfs = []
 	for f in os.listdir(folder_path):
-		text = textract.process(os.path.join(folder_path, f), method='pdftotext', layout=True).lower()
+		text = textract.process(os.path.join(folder_path, f), method='pdftotext', layout=True).decode('utf8').lower()
 		lines = linebreak_p.split(text)
 		leading_space_cnt = pd.Series([len(l) - len(l.strip()) for l in lines])
 		leading_space_cnt_percs = leading_space_cnt.apply(lambda x: percentileofscore(leading_space_cnt.values, x))
@@ -204,7 +209,7 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 			'deposits and other additions': True,
 			'checks and substitute checks': True,
 			'banking/check card withdrawals and purchases': True,
-			'online and electronic banking deductions': True, 
+			'online and electronic banking deductions': True,
 			'daily balance detail': False}
 		current_category = ''
 		rows = []
@@ -238,7 +243,7 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 								day = int(value.split('/')[1])
 								if start.year == end.year:
 									row['date'] = datetime.datetime(year=year_to_analyze, month=month, day=day)
-								else: 
+								else:
 									if month == 1:
 										date_year = end.year
 									elif month == 12:
@@ -257,25 +262,33 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 
 							if bool(value):
 								remaining_values.append(value)
-						
+
 						row['description'] = ' '.join([r.strip() for r in remaining_values])
 						rows.append(row)
 
 		df = pd.DataFrame(rows)
 		dfs.append(df)
 
-	df = pd.concat(dfs, ignore_index=True)
+	df = pd.concat(dfs, ignore_index=True, sort=False)
 	df.sort_values(by='date', ascending=True, inplace=True)
 	mask_keep = df['date'].apply(lambda x: x.year == year_to_analyze)
 	df = df[mask_keep].copy()
+	df.drop_duplicates(inplace=True)
+	df['account'] = get_fname_from_fpath(save_to_fpath)
 	df.to_csv(save_to_fpath, index=False)
 
 
+if __name__ == '__main__':
+	"""
+	# RUN IN IPYTHON, example
+	year_to_analyze = 2017
+	combine_monthly_statements_for_year('./data/transactions 2017 acct xxxx', year_to_analyze, './data/acctxxxx_2017.csv')
+	combine_monthly_statements_for_year('./data/transactions 2017 acct yyyy', year_to_analyze, './data/acctyyyy_2017.csv')
+	parse_pnc_statement_pdf('./data/spend account', year_to_analyze, './data/spend_acctzzzz_2017.csv')
+	"""
 
-"""
-# RUN IN IPYTHON, example
-year_to_analyze = 2017
-combine_monthly_statements_for_year('./data/transactions 2017 acct xxxx', year_to_analyze, './data/acctxxxx_2017.csv')
-combine_monthly_statements_for_year('./data/transactions 2017 acct yyyy', year_to_analyze, './data/acctyyyy_2017.csv')
-parse_pnc_statement_pdf('./data/spend account', year_to_analyze, './data/spend_acctzzzz_2017.csv')
-"""
+	year_to_analyze = 2018
+	combine_monthly_statements_for_year('/Users/chriseal/Documents/LLC docs - Data Science Consulting/transactions_lilcbiz2343_2018', year_to_analyze, './data/lilcbiz2343_2018.csv')
+	combine_monthly_statements_for_year('/Users/chriseal/Documents/LLC docs - Data Science Consulting/transactions_dsLlc7022_2018', year_to_analyze, './data/dsLlc7022_2018.csv')
+	parse_pnc_statement_pdf('/Users/chriseal/Documents/LLC docs - Data Science Consulting/transactions_spend8676_2018', year_to_analyze, './data/spend8676_2018.csv')
+

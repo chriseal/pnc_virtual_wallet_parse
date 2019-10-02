@@ -288,7 +288,7 @@ if __name__ == '__main__':
 	"""
 
 	year_to_analyze = 2018
-	combine_monthly_statements_for_year('/Users/chriseal/Documents/LLC docs - Data Science Consulting/transactions_lilcbiz2343_2018', year_to_analyze, './data/lilcbiz2343_2018.csv')
-	combine_monthly_statements_for_year('/Users/chriseal/Documents/LLC docs - Data Science Consulting/transactions_dsLlc7022_2018', year_to_analyze, './data/dsLlc7022_2018.csv')
-	parse_pnc_statement_pdf('/Users/chriseal/Documents/LLC docs - Data Science Consulting/transactions_spend8676_2018', year_to_analyze, './data/spend8676_2018.csv')
+	combine_monthly_statements_for_year('..._2018.csv')
+	combine_monthly_statements_for_year('..._2018.csv')
+	parse_pnc_statement_pdf('..._2018.csv')
 

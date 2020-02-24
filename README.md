@@ -17,7 +17,7 @@ This script does:
 
 ### Required modules
 
-- pandas, numpy, scipy, textract, os, re, unicodedata, string, datetime
+- pandas, numpy, scipy, textract (http://textract.readthedocs.io/en/latest/python_package.html), os, re, unicodedata, string, datetime
 
 ## Usage
 

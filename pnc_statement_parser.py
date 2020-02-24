@@ -15,8 +15,9 @@ long_whitespace_p = re.compile(r'[\r\n\t\f\v]|   ')
 MY_p = re.compile(r'\d{2}\/\d{2}')
 printable = set(string.printable)
 
-if not os.path.exists('./data'):
-	os.mkdir('./data')
+OUTPUT_FOLDER = './../pnc_outputs_aldkfjldkfj_data'
+if not os.path.exists(OUTPUT_FOLDER):
+	os.mkdir(OUTPUT_FOLDER)
 
 
 def get_fname_from_fpath(save_to_fpath):
@@ -200,6 +201,9 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 				row_starts_in_colIdx1 = False
 				if l_idx in rows_that_start_in_colIdx1:
 					row_starts_in_colIdx1 = True
+				if l_idx+1 < len(lines):
+					if l.startswith('                   '):
+						l += lines[l_idx+1].strip()
 				new_lines.append(rm_custom_chars_lower(l, row_starts_in_colIdx1=row_starts_in_colIdx1))
 
 		categories = {
@@ -282,13 +286,17 @@ if __name__ == '__main__':
 	"""
 	# RUN IN IPYTHON, example
 	year_to_analyze = 2017
-	combine_monthly_statements_for_year('./data/transactions 2017 acct xxxx', year_to_analyze, './data/acctxxxx_2017.csv')
-	combine_monthly_statements_for_year('./data/transactions 2017 acct yyyy', year_to_analyze, './data/acctyyyy_2017.csv')
+	combine_monthly_statements_for_year(
+		'./data/transactions 2017 acct xxxx', year_to_analyze, './data/acctxxxx_2017.csv')
+	combine_monthly_statements_for_year(
+		'./data/transactions 2017 acct yyyy', year_to_analyze, './data/acctyyyy_2017.csv')
 	parse_pnc_statement_pdf('./data/spend account', year_to_analyze, './data/spend_acctzzzz_2017.csv')
 	"""
 
-	year_to_analyze = 2018
-	combine_monthly_statements_for_year('..._2018.csv')
-	combine_monthly_statements_for_year('..._2018.csv')
-	parse_pnc_statement_pdf('..._2018.csv')
-
+	year_to_analyze = 2019
+	combine_monthly_statements_for_year('/home/chriseal/Documents/taxes_2019/csvs/lilc_2343/', 
+		year_to_analyze, os.path.join(OUTPUT_FOLDER, 'lilc_2343.csv') )
+	combine_monthly_statements_for_year('/home/chriseal/Documents/taxes_2019/csvs/dsllc_7088/', 
+		year_to_analyze, os.path.join(OUTPUT_FOLDER, 'dsllc_7088.csv') )
+	parse_pnc_statement_pdf('/home/chriseal/Documents/taxes_2019/paper_statements/spend_8676',
+		year_to_analyze, os.path.join(OUTPUT_FOLDER, 'spend_8676.csv') )

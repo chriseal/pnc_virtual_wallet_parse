@@ -202,8 +202,8 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 				if l_idx in rows_that_start_in_colIdx1:
 					row_starts_in_colIdx1 = True
 				if l_idx+1 < len(lines):
-					if l.startswith('                   '):
-						l += lines[l_idx+1].strip()
+					if lines[l_idx+1].startswith('                   '):
+						l = '\n'.join([l, lines[l_idx+1].strip()])
 				new_lines.append(rm_custom_chars_lower(l, row_starts_in_colIdx1=row_starts_in_colIdx1))
 
 		categories = {
@@ -294,9 +294,9 @@ if __name__ == '__main__':
 	"""
 
 	year_to_analyze = 2019
-	combine_monthly_statements_for_year('/home/chriseal/Documents/taxes_2019/csvs/lilc_2343/', 
-		year_to_analyze, os.path.join(OUTPUT_FOLDER, 'lilc_2343.csv') )
-	combine_monthly_statements_for_year('/home/chriseal/Documents/taxes_2019/csvs/dsllc_7088/', 
-		year_to_analyze, os.path.join(OUTPUT_FOLDER, 'dsllc_7088.csv') )
-	parse_pnc_statement_pdf('/home/chriseal/Documents/taxes_2019/paper_statements/spend_8676',
-		year_to_analyze, os.path.join(OUTPUT_FOLDER, 'spend_8676.csv') )
+	combine_monthly_statements_for_year('<path>', 
+		year_to_analyze, os.path.join(OUTPUT_FOLDER, '<output_file>') )
+	combine_monthly_statements_for_year('<path>', 
+		year_to_analyze, os.path.join(OUTPUT_FOLDER, '<output_file>') )
+	parse_pnc_statement_pdf('<path>',
+		year_to_analyze, os.path.join(OUTPUT_FOLDER, '<output_file>') )

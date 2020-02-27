@@ -11,7 +11,7 @@ This script does:
 
 ### Versions
 
-- Python 2.7.13
+- Python 2.7.13 or 3.7
 - Anaconda - conda 4.3.29
 - MacOSX - 10.12.6
 

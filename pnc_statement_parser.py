@@ -24,7 +24,7 @@ def get_fname_from_fpath(save_to_fpath):
 	return save_to_fpath.split("/")[-1].split('.')[0]
 
 
-def rm_custom_chars_lower(txt, row_starts_in_colIdx1=False):
+def rm_custom_chars(txt, row_starts_in_colIdx1=False):
 	""" # remove commas and dollar signs so that it's easier to match numerics """
 
 	m = re.match('   ', txt)
@@ -33,7 +33,7 @@ def rm_custom_chars_lower(txt, row_starts_in_colIdx1=False):
 			if row_starts_in_colIdx1:
 				txt = re.sub(' ', '_', txt, count=1)
 
-	return txt.replace(',', '').replace('$',' ').lower().strip()
+	return txt.replace(',', '').replace('$',' ').strip()
 
 
 def add_long_whitespace_bf_numeric(lines):
@@ -115,9 +115,9 @@ def convert_to_printable_text(val, float_to_int=True):
 				val = int(round(val, 0))
 
 	try:
-		return str(get_printable_text(val)).lower()
+		return str(get_printable_text(val))
 	except:
-		return str(get_printable_text(str(val))).lower()
+		return str(get_printable_text(str(val)))
 
 def try_to_convert_to_numeric(x):
 	""" """
@@ -187,7 +187,7 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 
 	dfs = []
 	for f in os.listdir(folder_path):
-		text = textract.process(os.path.join(folder_path, f), method='pdftotext', layout=True).decode('utf8').lower()
+		text = textract.process(os.path.join(folder_path, f), method='pdftotext', layout=True).decode('utf8')
 		lines = linebreak_p.split(text)
 		leading_space_cnt = pd.Series([len(l) - len(l.strip()) for l in lines])
 		leading_space_cnt_percs = leading_space_cnt.apply(lambda x: percentileofscore(leading_space_cnt.values, x))
@@ -204,22 +204,22 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 				if l_idx+1 < len(lines):
 					if lines[l_idx+1].startswith('                   '):
 						l = '\n'.join([l, lines[l_idx+1].strip()])
-				new_lines.append(rm_custom_chars_lower(l, row_starts_in_colIdx1=row_starts_in_colIdx1))
+				new_lines.append(rm_custom_chars(l, row_starts_in_colIdx1=row_starts_in_colIdx1))
 
 		categories = {
-			'balance summary': False,
-			'transaction summary': False,
-			'interest summary': False,
-			'deposits and other additions': True,
-			'checks and substitute checks': True,
-			'banking/check card withdrawals and purchases': True,
-			'online and electronic banking deductions': True,
-			'daily balance detail': False}
+			'Balance Summary': False,
+			'Transaction Summary': False,
+			'Interest Summary': False,
+			'Deposits and Other Additions': True,
+			'Checks and Substitute Checks': True,
+			'Banking/Debit Card Withdrawals and Purchases': True,
+			'Online and Electronic Banking Deductions': True,
+			'Daily Balance Detail': False}
 		current_category = ''
 		rows = []
 		period_found = False
 		for l_idx, l in enumerate(new_lines):
-			if 'for the period' in l and not period_found:
+			if 'For the period' in l and not period_found:
 				period = re.search(r'\d{2}\/\d{2}\/\d{4} to \d{2}\/\d{2}\/\d{4}', l)
 				period = l[period.start():period.end()]
 				start = datetime.datetime.strptime(period.split(' to ')[0], '%m/%d/%Y')

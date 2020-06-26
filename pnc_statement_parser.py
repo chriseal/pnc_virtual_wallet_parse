@@ -184,6 +184,13 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 	parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath)
 	"""
 
+	blocklist_value_regexes = [
+		re.compile(r'There were \d+ other Banking'),
+		re.compile(r'Machine/Debit Card deductions\n?'),
+		re.compile(r'totaling'),
+		re.compile(r'\d+\.\d\d\.\n?'),
+	]
+
 	dfs = []
 	for f in os.listdir(folder_path):
 		text = textract.process(os.path.join(folder_path, f), method='pdftotext', layout=True).decode('utf8')
@@ -262,6 +269,9 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 							if val_idx == len(values)-1:
 								row['category'] = value.strip()
 								continue
+
+							for regex in blocklist_value_regexes:
+								value = re.sub(regex, '', value).strip()
 
 							if bool(value):
 								remaining_values.append(value)

@@ -11,8 +11,7 @@ import datetime
 
 
 linebreak_p = re.compile(r'\r|\n|\x0c')
-long_whitespace_p = re.compile(r'[\r\n\t\f\v]|   ')
-MY_p = re.compile(r'\d{2}\/\d{2}')
+date_p = re.compile(r'\d{2}\/\d{2}')
 printable = set(string.printable)
 
 OUTPUT_FOLDER = './../pnc_outputs_aldkfjldkfj_data'
@@ -236,7 +235,7 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 
 			if current_category in categories.keys():
 				if categories[current_category]:
-					if re.match(MY_p, l.strip()):
+					if re.match(date_p, l.strip()):
 						l = '         '.join([l, current_category])
 						values = l.split('  ')
 						row = {}

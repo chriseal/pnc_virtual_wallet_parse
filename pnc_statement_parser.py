@@ -111,7 +111,7 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 					row_starts_in_colIdx1 = True
 				if l_idx+1 < len(lines):
 					if lines[l_idx+1].startswith('                   '):
-						l = '\n'.join([l, lines[l_idx+1].strip()])
+						l = ' '.join([l, lines[l_idx+1].strip()])
 				new_lines.append(rm_custom_chars(l, row_starts_in_colIdx1=row_starts_in_colIdx1))
 
 		categories = {

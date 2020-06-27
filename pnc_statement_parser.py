@@ -163,8 +163,9 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 									row['date'] = datetime.datetime(year=date_year, month=month, day=day)
 								continue
 							try:
-								row['amount'] = float(value)
-								continue
+								if 'amount' not in row:
+									row['amount'] = float(value)
+									continue
 							except:
 								pass
 

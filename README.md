@@ -17,7 +17,7 @@ This script does:
 
 ### Required modules
 
-- pandas, numpy, scipy, textract (http://textract.readthedocs.io/en/latest/python_package.html), os, re, unicodedata, string, datetime
+- pandas, numpy, scipy, textract (http://textract.readthedocs.io/en/latest/python_package.html), os, re, datetime
 
 ## Usage
 
@@ -55,11 +55,6 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 ```
 
 3. Import the csv that the program outputs into a spreadsheet program of your choice. Do the appropriate filtering, labeling for tax purposes or otherwise, and potentially, create a pivot table to aggregate the results.
-
-## TODO
-
-- Gather second line descriptions that cross multiple lines in the PDF
-- Correctly parse transfer rows
 
 ## Feedback 
 

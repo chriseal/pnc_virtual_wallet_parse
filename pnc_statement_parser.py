@@ -5,15 +5,11 @@ from scipy.stats import percentileofscore
 import os
 import textract # http://textract.readthedocs.io/en/latest/python_package.html
 import re
-import unicodedata
-import string
 import datetime
 
 
 linebreak_p = re.compile(r'\r|\n|\x0c')
-long_whitespace_p = re.compile(r'[\r\n\t\f\v]|   ')
-MY_p = re.compile(r'\d{2}\/\d{2}')
-printable = set(string.printable)
+date_p = re.compile(r'\d{2}\/\d{2}')
 
 OUTPUT_FOLDER = './../pnc_outputs_aldkfjldkfj_data'
 if not os.path.exists(OUTPUT_FOLDER):
@@ -24,7 +20,7 @@ def get_fname_from_fpath(save_to_fpath):
 	return save_to_fpath.split("/")[-1].split('.')[0]
 
 
-def rm_custom_chars_lower(txt, row_starts_in_colIdx1=False):
+def rm_custom_chars(txt, row_starts_in_colIdx1=False):
 	""" # remove commas and dollar signs so that it's easier to match numerics """
 
 	m = re.match('   ', txt)
@@ -33,102 +29,7 @@ def rm_custom_chars_lower(txt, row_starts_in_colIdx1=False):
 			if row_starts_in_colIdx1:
 				txt = re.sub(' ', '_', txt, count=1)
 
-	return txt.replace(',', '').replace('$',' ').lower().strip()
-
-
-def add_long_whitespace_bf_numeric(lines):
-	""" """
-
-	numeric_at_end_p = re.compile(r"(-?\d+(\.\d+)?)$")
-	for l_idx, l in enumerate(lines):
-		l2 = re.sub(numeric_at_end_p, "                "+"\\1", l)
-		if l2 != l:
-			lines[l_idx] = l2
-
-	return lines
-
-
-def remove_long_whitespace_and_replace_with_delimiter(lines, split_p):
-	""" """
-
-	new_lines, max_cols = [], 0
-	for l in lines:
-		nl = []
-		for s in split_p.split(l):
-			if len(s) > 0:
-				nl.append(s.strip().replace(',', '')) # for easier conversion to float
-		if len(nl) > max_cols:
-			max_cols = len(nl)
-		new_lines.append(nl)
-
-	return new_lines, max_cols
-
-
-def ensure_equal_number_of_columns(lines, max_cols):
-	""" list of lists"""
-
-	for line_idx, line in enumerate(lines):
-		cols_to_add = max_cols - len(line)
-		if cols_to_add > 0:
-			for _ in range(cols_to_add):
-				line.append('')
-			lines[line_idx] = line
-
-	return lines
-
-
-def convert_to_dataframe_coerce_to_float(lines):
-	""" """
-
-	df = pd.DataFrame(lines)
-	for col in df.columns:
-		df[col] = df.loc[:, col].apply(lambda x: try_to_convert_to_numeric(x))
-		df[col] = df.loc[:, col].apply(lambda x: try_to_convert_to_numeric(x)) # needs to run twice, in case of unicode
-
-	return df
-
-
-
-def normalize_unicode(txt):
-	""" get the best ascii representation of the text """
-
-	# TODO - change this when converting to PYTHON 3
-	if type(txt) == unicode:
-		return unicodedata.normalize('NFKD', txt).encode('ascii','ignore')
-	else:
-		return txt
-
-def get_printable_text(txt):
-	""" printable ascii only """
-
-	return str(''.join([c for c in normalize_unicode(txt).replace("\xc2\xa0", ' ').replace("\xe2\x80\x90", ' ') if c in printable]))
-
-
-def convert_to_printable_text(val, float_to_int=True):
-	""" take in any val and return printable text """
-
-	if float_to_int:
-		if type(val) == float:
-			if np.isnan(val):
-				val = ''
-			else:
-				val = int(round(val, 0))
-
-	try:
-		return str(get_printable_text(val)).lower()
-	except:
-		return str(get_printable_text(str(val))).lower()
-
-def try_to_convert_to_numeric(x):
-	""" """
-
-	try:
-		return float(x)
-	except:
-		try:
-			return int(round(x, 0))
-		except:
-			return convert_to_printable_text(x)
+	return txt.replace(',', '').replace('$',' ').strip()
 
 
 # MAIN FUNCTIONS =======================================================================
@@ -185,9 +86,16 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 	parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath)
 	"""
 
+	blocklist_value_regexes = [
+		re.compile(r'There were \d+ other Banking'),
+		re.compile(r'Machine/Debit Card deductions\n?'),
+		re.compile(r'totaling'),
+		re.compile(r'\d+\.\d\d\.\n?'),
+	]
+
 	dfs = []
 	for f in os.listdir(folder_path):
-		text = textract.process(os.path.join(folder_path, f), method='pdftotext', layout=True).decode('utf8').lower()
+		text = textract.process(os.path.join(folder_path, f), method='pdftotext', layout=True).decode('utf8')
 		lines = linebreak_p.split(text)
 		leading_space_cnt = pd.Series([len(l) - len(l.strip()) for l in lines])
 		leading_space_cnt_percs = leading_space_cnt.apply(lambda x: percentileofscore(leading_space_cnt.values, x))
@@ -203,23 +111,23 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 					row_starts_in_colIdx1 = True
 				if l_idx+1 < len(lines):
 					if lines[l_idx+1].startswith('                   '):
-						l = '\n'.join([l, lines[l_idx+1].strip()])
-				new_lines.append(rm_custom_chars_lower(l, row_starts_in_colIdx1=row_starts_in_colIdx1))
+						l = ' '.join([l, lines[l_idx+1].strip()])
+				new_lines.append(rm_custom_chars(l, row_starts_in_colIdx1=row_starts_in_colIdx1))
 
 		categories = {
-			'balance summary': False,
-			'transaction summary': False,
-			'interest summary': False,
-			'deposits and other additions': True,
-			'checks and substitute checks': True,
-			'banking/check card withdrawals and purchases': True,
-			'online and electronic banking deductions': True,
-			'daily balance detail': False}
+			'Balance Summary': False,
+			'Transaction Summary': False,
+			'Interest Summary': False,
+			'Deposits and Other Additions': True,
+			'Checks and Substitute Checks': True,
+			'Banking/Debit Card Withdrawals and Purchases': True,
+			'Online and Electronic Banking Deductions': True,
+			'Daily Balance Detail': False}
 		current_category = ''
 		rows = []
 		period_found = False
 		for l_idx, l in enumerate(new_lines):
-			if 'for the period' in l and not period_found:
+			if 'For the period' in l and not period_found:
 				period = re.search(r'\d{2}\/\d{2}\/\d{4} to \d{2}\/\d{2}\/\d{4}', l)
 				period = l[period.start():period.end()]
 				start = datetime.datetime.strptime(period.split(' to ')[0], '%m/%d/%Y')
@@ -236,7 +144,7 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 
 			if current_category in categories.keys():
 				if categories[current_category]:
-					if re.match(MY_p, l.strip()):
+					if re.match(date_p, l.strip()):
 						l = '         '.join([l, current_category])
 						values = l.split('  ')
 						row = {}
@@ -255,14 +163,18 @@ def parse_pnc_statement_pdf(folder_path, year_to_analyze, save_to_fpath):
 									row['date'] = datetime.datetime(year=date_year, month=month, day=day)
 								continue
 							try:
-								row['amount'] = float(value)
-								continue
+								if 'amount' not in row:
+									row['amount'] = float(value)
+									continue
 							except:
 								pass
 
 							if val_idx == len(values)-1:
 								row['category'] = value.strip()
 								continue
+
+							for regex in blocklist_value_regexes:
+								value = re.sub(regex, '', value).strip()
 
 							if bool(value):
 								remaining_values.append(value)

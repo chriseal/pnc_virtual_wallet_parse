@@ -47,6 +47,8 @@ def combine_monthly_statements_for_year(folder_path, year_to_analyze, save_to_fp
 
 	dfs = []
 	for f in os.listdir(os.path.join(folder_path)):
+		if not f.endswith('.csv'):
+			continue
 		df = pd.read_csv(os.path.join(folder_path, f), skiprows=1, header=None)
 		df.columns = ['date', 'amount', 'desc', '1','2', 'type']
 		dfs.append(df)
@@ -56,6 +58,9 @@ def combine_monthly_statements_for_year(folder_path, year_to_analyze, save_to_fp
 	df['date'] = df['date'].apply(lambda x: pd.to_datetime(x))
 	mask_keep = df['date'].apply(lambda x: x.year == year_to_analyze)
 	df = df[mask_keep].copy()
+
+	df['1'] = df['1'].str.strip()
+	df['2'] = df['2'].str.strip()
 
 	debit = df.query("type == 'DEBIT'").copy()
 	debit.rename(columns={'amount': 'debit'}, inplace=True)
@@ -205,10 +210,19 @@ if __name__ == '__main__':
 	parse_pnc_statement_pdf('./data/spend account', year_to_analyze, './data/spend_acctzzzz_2017.csv')
 	"""
 
-	year_to_analyze = 2019
-	combine_monthly_statements_for_year('<path>', 
-		year_to_analyze, os.path.join(OUTPUT_FOLDER, '<output_file>') )
-	combine_monthly_statements_for_year('<path>', 
-		year_to_analyze, os.path.join(OUTPUT_FOLDER, '<output_file>') )
-	parse_pnc_statement_pdf('<path>',
-		year_to_analyze, os.path.join(OUTPUT_FOLDER, '<output_file>') )
+	year_to_analyze = 2020
+	combine_monthly_statements_for_year(
+		'<path>', 
+		year_to_analyze, 
+		os.path.join(OUTPUT_FOLDER, '<output_file>') 
+	)
+	combine_monthly_statements_for_year(
+		'<path>', 
+		year_to_analyze, 
+		os.path.join(OUTPUT_FOLDER, '<output_file>') 
+	)
+	parse_pnc_statement_pdf(
+		'<path>',
+		year_to_analyze, 
+		os.path.join(OUTPUT_FOLDER, '<output_file>') 
+	)

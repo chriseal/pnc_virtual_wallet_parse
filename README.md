@@ -19,6 +19,17 @@ This script does:
 
 - pandas, numpy, scipy, textract (http://textract.readthedocs.io/en/latest/python_package.html), os, re, datetime
 
+```
+conda update conda
+conda create -n pnc python=3.7.3 anaconda
+conda activate pnc
+pip install pandas
+pip install numpy
+pip install scipy
+pip install textract
+```
+
+
 ## Usage
 
 1. Manually export the appropriate statements (CSV or PDF) from PNC.com
